@@ -15,7 +15,12 @@ const OUTPUT_DIR = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 const postPath = join(BOT_DIR, 'POST.json');
 const post = JSON.parse(readFileSync(postPath, 'utf8'));
-if (typeof post.url !== 'string' || !post.url.startsWith('https://x.com/') && !post.url.startsWith('https://twitter.com/')) {
+
+// The post must be a real X post address, not the starter placeholder:
+// https://x.com/<handle>/status/<digits> (twitter.com passes too).
+const url = typeof post.url === 'string' ? post.url : '';
+const ok = /^https:\/\/(x\.com|twitter\.com)\/[^/]+\/status\/\d+/.test(url);
+if (!ok) {
   console.error('POST.json must name one X post: https://x.com/<handle>/status/<id>');
   process.exit(1);
 }
